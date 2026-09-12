@@ -33,6 +33,7 @@ export default function LoginPage() {
   const [verificationCode, setVerificationCode] = useState('');
   const [verificationLoading, setVerificationLoading] = useState(false);
   const [verificationError, setVerificationError] = useState('');
+  const [verificationEmailSent, setVerificationEmailSent] = useState(false);
   const [showAppModal, setShowAppModal] = useState(false);
 
   const { register, handleSubmit, formState: { errors }, watch } = useForm();
@@ -72,6 +73,7 @@ export default function LoginPage() {
 
         if (res.data.success) {
           setVerificationEmail(data.email);
+          setVerificationEmailSent(res.data.data?.emailSent === true);
           setShowVerificationModal(true);
         }
       } else {
@@ -98,7 +100,8 @@ export default function LoginPage() {
       }
     } catch (err) {
       console.error(err);
-      setError(err.response?.data?.message || 'Une erreur est survenue.');
+      const validationErrors = Object.values(err.response?.data?.errors || {}).flat();
+      setError(validationErrors.join(' ') || err.response?.data?.message || 'Une erreur est survenue.');
     } finally {
       setLoading(false);
     }
@@ -285,6 +288,12 @@ export default function LoginPage() {
                 {errors.password && (
                   <p className="mt-1 text-xs text-red-400">{errors.password.message}</p>
                 )}
+                {isRegister && (
+                  <div className="mt-2 rounded-xl border border-orange-500/20 bg-orange-500/5 px-3 py-2.5 text-xs text-slate-500 dark:text-slate-400">
+                    <p className="font-semibold text-orange-700 dark:text-orange-300">Le mot de passe doit contenir :</p>
+                    <p className="mt-1">8 caractères minimum, une majuscule, une minuscule et un chiffre.</p>
+                  </div>
+                )}
               </div>
 
               {isRegister && (
@@ -353,9 +362,16 @@ export default function LoginPage() {
               className="w-full max-w-sm glass border border-slate-200 dark:border-zinc-800 rounded-3xl p-6 shadow-2xl relative bg-white dark:bg-zinc-900"
             >
               <h3 className="text-xl font-bold text-slate-800 dark:text-white mb-2">Vérifiez votre Email</h3>
-              <p className="text-sm text-slate-500 dark:text-slate-400 mb-6">
-                Nous avons envoyé un code de vérification à 6 chiffres à <strong>{verificationEmail}</strong>.
-              </p>
+              {verificationEmailSent ? (
+                <p className="text-sm text-slate-500 dark:text-slate-400 mb-6">
+                  Un code de vérification à 6 chiffres a été envoyé à <strong>{verificationEmail}</strong>. Vérifiez aussi le dossier spam.
+                </p>
+              ) : (
+                <div className="mb-6 rounded-xl border border-amber-500/30 bg-amber-500/10 px-4 py-3 text-sm text-amber-800 dark:text-amber-200">
+                  <p className="font-semibold">E-mail non configuré</p>
+                  <p className="mt-1">Le compte est créé, mais le code n’a pas pu être envoyé. L’administrateur doit configurer le service SMTP avant la vérification.</p>
+                </div>
+              )}
 
               <form onSubmit={handleVerifyCode} className="space-y-4">
                 {verificationError && (

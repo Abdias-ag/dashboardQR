@@ -124,7 +124,8 @@ export default function RootPage() {
       }
     } catch (err) {
       console.error(err);
-      setAuthError(err.response?.data?.message || 'Une erreur est survenue.');
+      const validationErrors = Object.values(err.response?.data?.errors || {}).flat();
+      setAuthError(validationErrors.join(' ') || err.response?.data?.message || 'Une erreur est survenue.');
     } finally {
       setAuthLoading(false);
     }
