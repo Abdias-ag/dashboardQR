@@ -34,6 +34,8 @@ export default function LoginPage() {
   const [verificationLoading, setVerificationLoading] = useState(false);
   const [verificationError, setVerificationError] = useState('');
   const [verificationEmailSent, setVerificationEmailSent] = useState(false);
+  const [resendLoading, setResendLoading] = useState(false);
+  const [resendMessage, setResendMessage] = useState('');
   const [showAppModal, setShowAppModal] = useState(false);
 
   const { register, handleSubmit, formState: { errors }, watch } = useForm();
@@ -92,6 +94,8 @@ export default function LoginPage() {
 
           if (!user.isVerified) {
             setVerificationEmail(user.email);
+            setVerificationEmailSent(false);
+            setResendMessage('');
             setShowVerificationModal(true);
           } else {
             goToDashboard();
@@ -104,6 +108,21 @@ export default function LoginPage() {
       setError(validationErrors.join(' ') || err.response?.data?.message || 'Une erreur est survenue.');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleResendVerification = async () => {
+    setVerificationError('');
+    setResendMessage('');
+    setResendLoading(true);
+    try {
+      const res = await api.post('/auth/resend-verification', { email: verificationEmail });
+      setVerificationEmailSent(res.data.data?.emailSent === true);
+      setResendMessage(res.data.message || 'Le code a été renvoyé.');
+    } catch (err) {
+      setVerificationError(err.response?.data?.message || 'Impossible de renvoyer le code.');
+    } finally {
+      setResendLoading(false);
     }
   };
 
@@ -402,6 +421,17 @@ export default function LoginPage() {
                   ) : (
                     'Confirmer le code'
                   )}
+                </button>
+                {resendMessage && (
+                  <p className="text-xs text-center text-slate-500 dark:text-slate-400">{resendMessage}</p>
+                )}
+                <button
+                  type="button"
+                  onClick={handleResendVerification}
+                  disabled={resendLoading}
+                  className="w-full text-xs font-semibold text-orange-600 dark:text-orange-400 hover:underline disabled:opacity-50"
+                >
+                  {resendLoading ? 'Envoi en cours...' : 'Renvoyer le code de confirmation'}
                 </button>
               </form>
             </motion.div>

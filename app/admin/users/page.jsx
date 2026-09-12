@@ -81,6 +81,21 @@ export default function AdminUsersPage() {
     }
   };
 
+  const handleVerifyEmail = async (id) => {
+    setUpdatingId(id);
+    try {
+      const res = await userService.verifyUserEmail(id);
+      if (res.success) {
+        setUsers(prev => prev.map(u => u.id === id ? { ...u, isVerified: true } : u));
+        showToast('success', 'Adresse email confirmée.');
+      }
+    } catch {
+      showToast('error', 'Impossible de confirmer l\'adresse email.');
+    } finally {
+      setUpdatingId(null);
+    }
+  };
+
   const handleDelete = async () => {
     if (!deleteId) return;
     setDeleting(true);
@@ -159,6 +174,15 @@ export default function AdminUsersPage() {
               Détails
             </Button>
           </a>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => handleVerifyEmail(row.id)}
+            disabled={updatingId === row.id || row.isVerified}
+            className={row.isVerified ? 'text-green-600 dark:text-green-400' : 'text-orange-500'}
+          >
+            {row.isVerified ? 'Email confirmé' : 'Confirmer email'}
+          </Button>
           <Button
             variant="ghost"
             size="sm"

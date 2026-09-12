@@ -47,6 +47,9 @@ export default function RootPage() {
   const [verificationCode, setVerificationCode] = useState('');
   const [verificationLoading, setVerificationLoading] = useState(false);
   const [verificationError, setVerificationError] = useState('');
+  const [verificationEmailSent, setVerificationEmailSent] = useState(false);
+  const [resendLoading, setResendLoading] = useState(false);
+  const [resendMessage, setResendMessage] = useState('');
 
   // Check if already logged in on load
   useEffect(() => {
@@ -97,6 +100,8 @@ export default function RootPage() {
 
         if (res.data.success) {
           setVerificationEmail(authForm.email);
+          setVerificationEmailSent(res.data.data?.emailSent === true);
+          setResendMessage('');
           setAuthModalOpen(false);
           setShowVerificationModal(true);
         }
@@ -115,6 +120,8 @@ export default function RootPage() {
 
           if (!user.isVerified) {
             setVerificationEmail(user.email);
+            setVerificationEmailSent(false);
+            setResendMessage('');
             setAuthModalOpen(false);
             setShowVerificationModal(true);
           } else {
@@ -128,6 +135,21 @@ export default function RootPage() {
       setAuthError(validationErrors.join(' ') || err.response?.data?.message || 'Une erreur est survenue.');
     } finally {
       setAuthLoading(false);
+    }
+  };
+
+  const handleResendVerification = async () => {
+    setVerificationError('');
+    setResendMessage('');
+    setResendLoading(true);
+    try {
+      const res = await api.post('/auth/resend-verification', { email: verificationEmail });
+      setVerificationEmailSent(res.data.data?.emailSent === true);
+      setResendMessage(res.data.message || 'Le code a été renvoyé.');
+    } catch (err) {
+      setVerificationError(err.response?.data?.message || 'Impossible de renvoyer le code.');
+    } finally {
+      setResendLoading(false);
     }
   };
 
@@ -691,7 +713,7 @@ export default function RootPage() {
             >
               <h3 className="text-xl font-bold text-slate-800 dark:text-white mb-2">Vérifiez votre Email</h3>
               <p className="text-sm text-slate-500 dark:text-slate-400 mb-6">
-                Nous avons envoyé un code de vérification à 6 chiffres à <strong>{verificationEmail}</strong>.
+                {verificationEmailSent ? 'Un code de vérification à 6 chiffres a été envoyé à' : 'Demandez un code de vérification à 6 chiffres pour'} <strong>{verificationEmail}</strong>.
               </p>
 
               <form onSubmit={handleVerifyCode} className="space-y-4">
@@ -723,6 +745,17 @@ export default function RootPage() {
                   ) : (
                     'Confirmer le code'
                   )}
+                </button>
+                {resendMessage && (
+                  <p className="text-xs text-center text-slate-500 dark:text-slate-400">{resendMessage}</p>
+                )}
+                <button
+                  type="button"
+                  onClick={handleResendVerification}
+                  disabled={resendLoading}
+                  className="w-full text-xs font-semibold text-orange-600 dark:text-orange-400 hover:underline disabled:opacity-50"
+                >
+                  {resendLoading ? 'Envoi en cours...' : 'Renvoyer le code de confirmation'}
                 </button>
               </form>
             </motion.div>

@@ -42,6 +42,11 @@ const userService = {
     return response.data;
   },
 
+  async verifyUserEmail(id) {
+    const response = await api.patch(`/users/admin/users/${id}/verify-email`);
+    return response.data;
+  },
+
   async deleteUser(id) {
     const response = await api.delete(`/users/admin/users/${id}`);
     return response.data;
