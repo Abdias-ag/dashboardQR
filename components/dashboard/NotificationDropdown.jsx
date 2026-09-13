@@ -11,16 +11,20 @@ export default function NotificationDropdown() {
   const [open, setOpen] = useState(false);
   const [notifications, setNotifications] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [serverUnread, setServerUnread] = useState(0);
   const ref = useRef(null);
   const { showToast } = useToast();
 
-  const unread = notifications.filter(n => !n.isRead).length;
+  const unread = serverUnread || notifications.filter(n => !n.isRead).length;
 
   const fetchNotifications = async () => {
     setLoading(true);
     try {
       const res = await notificationService.getNotifications();
-      if (res.success) setNotifications(res.data?.slice(0, 8) || []);
+      if (res.success) {
+        setNotifications(res.data?.slice(0, 8) || []);
+        setServerUnread(res.meta?.unreadCount || 0);
+      }
     } catch (e) {
       console.error(e);
     } finally {
@@ -30,6 +34,8 @@ export default function NotificationDropdown() {
 
   useEffect(() => {
     fetchNotifications();
+    const interval = window.setInterval(fetchNotifications, 30000);
+    return () => window.clearInterval(interval);
   }, []);
 
   useEffect(() => {
@@ -44,6 +50,7 @@ export default function NotificationDropdown() {
     try {
       await notificationService.markAllAsRead();
       setNotifications(prev => prev.map(n => ({ ...n, isRead: true })));
+      setServerUnread(0);
       showToast('success', 'Toutes les notifications marquées comme lues.');
     } catch (e) {
       showToast('error', 'Erreur lors de la mise à jour.');
