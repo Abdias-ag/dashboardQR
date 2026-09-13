@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-labelledby="title">
+  <title>QR Platform</title>
+  <rect width="64" height="64" rx="16" fill="#0f172a"/>
+  <path fill="#1288f5" d="M12 12h18v18H12V12Zm5 5v8h8v-8h-8Zm17-5h18v18H34V12Zm5 5v8h8v-8h-8ZM12 34h18v18H12V34Zm5 5v8h8v-8h-8Z"/>
+  <path fill="#2ca4ff" d="M36 34h6v6h-6v-6Zm10 0h6v12h-6V34ZM34 44h8v8h-8v-8Zm12 12h6v-6h-6v6ZM40 42h6v6h-6v-6Z"/>
+</svg>
