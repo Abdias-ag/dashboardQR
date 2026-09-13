@@ -45,13 +45,16 @@ const authService = {
   },
 
   async logout() {
-    try {
-      await api.post('/auth/logout');
-    } catch (e) { /* silence */ }
     localStorage.removeItem('accessToken');
     localStorage.removeItem('refreshToken');
     localStorage.removeItem('user');
     clearAuthCookies();
+    try {
+      await Promise.race([
+        api.post('/auth/logout'),
+        new Promise((resolve) => setTimeout(resolve, 3000)),
+      ]);
+    } catch (e) { /* silence */ }
   },
 
   async refreshToken(refreshToken) {

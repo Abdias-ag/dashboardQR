@@ -29,12 +29,9 @@ export default function UserMenu() {
   }, []);
 
   const handleLogout = async () => {
-    try {
-      await authService.logout();
-    } catch (e) { /* silence */ }
-    localStorage.clear();
+    await authService.logout();
     showToast('info', 'Vous avez été déconnecté.');
-    router.push('/login');
+    window.location.replace('/login');
   };
 
   const menuItems = [
